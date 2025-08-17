@@ -1,19 +1,6 @@
-#!/bin/sh
-# shellcheck shell=bash
-# Re-lance en bash si nécessaire (et essaie de l’installer si absent)
-if ! command -v bash >/dev/null 2>&1; then
-  if command -v apt-get >/dev/null 2>&1; then
-    apt-get update -y && apt-get install -y bash
-  elif command -v dnf >/dev/null 2>&1; then
-    dnf -y install bash
-  elif command -v yum >/dev/null 2>&1; then
-    yum -y install bash
-  fi
-fi
-exec bash "$0" "$@"
-
-
+#!/usr/bin/env bash
 set -Eeuo pipefail
+
 
 # ===========================
 #  PortGuard — Anti-scan + ACL
