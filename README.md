@@ -7,10 +7,10 @@ Only your allowed ports stay open; scanners are auto-blacklisted (all ports look
 
 ⚡️ Quick Install
 
-wget -qO /tmp/portguard.sh https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh \
-&& sed -i 's/\r$//' /tmp/portguard.sh \
-&& chmod +x /tmp/portguard.sh \
-&& sudo /tmp/portguard.sh
+sudo wget -qO /root/portguard.sh "https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh" \
+&& sudo chmod +x /root/portguard.sh \
+&& sudo /root/portguard.sh
+
 
 
 🧭 Menu
@@ -35,10 +35,10 @@ EN below.
 
 ⚡️ Installation rapide
 
-wget -qO /tmp/portguard.sh https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh \
-&& sed -i 's/\r$//' /tmp/portguard.sh \
-&& chmod +x /tmp/portguard.sh \
-&& sudo /tmp/portguard.sh
+sudo wget -qO /root/portguard.sh "https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh" \
+&& sudo chmod +x /root/portguard.sh \
+&& sudo /root/portguard.sh
+
 
 
 🧭 Utilisation (menu)
