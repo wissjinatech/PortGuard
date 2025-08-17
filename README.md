@@ -7,14 +7,11 @@ Only your allowed ports stay open; scanners are auto-blacklisted (all ports look
 
 ⚡️ Quick Install
 
-wget -qO- https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh | sed 's/\r$//' | sudo bash
+wget -qO /tmp/portguard.sh https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh \
+&& sed -i 's/\r$//' /tmp/portguard.sh \
+&& chmod +x /tmp/portguard.sh \
+&& sudo /tmp/portguard.sh
 
-Or clone:
-
-git clone https://github.com/wissjinatech/PortGuard.git
-cd PortGuard
-chmod +x secure_ports_scan.sh
-sudo ./secure_ports_scan.sh
 
 🧭 Menu
 
@@ -38,14 +35,11 @@ EN below.
 
 ⚡️ Installation rapide
 
-wget -qO- https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh | sed 's/\r$//' | sudo bash
+wget -qO /tmp/portguard.sh https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh \
+&& sed -i 's/\r$//' /tmp/portguard.sh \
+&& chmod +x /tmp/portguard.sh \
+&& sudo /tmp/portguard.sh
 
-Ou cloner :
-
-git clone https://github.com/wissjinatech/PortGuard.git
-cd PortGuard
-chmod +x secure_ports_scan.sh
-sudo ./secure_ports_scan.sh
 
 🧭 Utilisation (menu)
 
