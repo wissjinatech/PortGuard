@@ -337,17 +337,73 @@ SHOW_BL() {
     echo "(set inexistant)"
   fi
 }
+FLUSH_BL() {
+  LOAD_CFG; ENSURE_DEPS; ENSURE_BASESETS
+  read -rp "Confirmer la suppression de TOUTES les IP bannies ? [y/N]: " ans
+  case "${ans:-N}" in
+    y|Y) ;;
+    *) echo "Abandon."; return ;;
+  esac
 
+  ipset flush "$BL_SET" || true
+  # Réinitialiser l’historique du module 'recent' (détection)
+  echo clear > /proc/net/xt_recent/psdetect 2>/dev/null || true
+  SAVE_IPSET
+  echo "[OK] Blacklist vidée."
+}
+# === Couleurs & bannière animée WDZ ===
+init_colors() {
+  if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    BLD='\033[1m'; RST='\033[0m'
+    RED='\033[31m'; YEL='\033[33m'; GRN='\033[32m'
+    CYN='\033[36m'; BLU='\033[34m'; MAG='\033[35m'
+  else
+    BLD=; RST=; RED=; YEL=; GRN=; CYN=; BLU=; MAG=
+  fi
+}
+
+banner_wdz() {
+  init_colors
+  local lines=(
+"  ____             _               _____                 _           "
+" |  _ \\ ___  _ __ | |_ ___  _ __  |  __ \\ ___  __ _  ___| |__   __ _ "
+" | |_) / _ \\| '_ \\| __/ _ \\| '__| | |  \\/ _ \\/ _\` |/ __| '_ \\ / _\` |"
+" |  __/ (_) | | | | || (_) | |    | |__|  __/ (_| | (__| | | | (_| |"
+" |_|   \\___/|_| |_|\\__\\___/|_|    |_____/\\___|\\__,_|\\___|_| |_|\\__,_|"
+"                PortGuard - Anti-scan   ·   by WDZ                    "
+  )
+  local palette=("$RED" "$YEL" "$GRN" "$CYN" "$BLU" "$MAG")
+  local cols; cols=$(tput cols 2>/dev/null || echo 80)
+  local anim_ms=${PORTGUARD_ANIM_MS:-25}   # vitesse animation (ms) — exporte PORTGUARD_ANIM_MS=0 pour désactiver
+  printf "\n"
+  for i in "${!lines[@]}"; do
+    local color=${palette[$(( i % ${#palette[@]} ))]}
+    local l="${lines[$i]}"
+    # centrage
+    local pad=$(( (cols - ${#l}) / 2 )); ((pad<0)) && pad=0
+    printf "%*s%b%s%b\n" "$pad" "" "${color}${BLD}" "$l" "$RST"
+    if [ "$anim_ms" -gt 0 ] && [ -t 1 ]; then
+      # petite anim
+      usleep $(( anim_ms * 1000 )) 2>/dev/null || sleep 0.$(( anim_ms/10 ))
+    fi
+  done
+  printf "\n"
+}
+
+# === MENU principal (couleurs + bannière WDZ) ===
 MENU() {
-  echo "============================="
-  echo "   PortGuard - Anti-scan"
-  echo "============================="
-  echo "1) Appliquer la sécurité"
-  echo "2) Ajouter IP à la whitelist"
-  echo "3) Ajouter IP à la blacklist"
-  echo "4) Afficher whitelist & config"
-  echo "5) Afficher blacklist"
-  echo "0) Quitter"
+  clear
+  banner_wdz
+
+  echo -e "${BLD}${CYN}1)${RST} Appliquer la sécurité"
+  echo -e "${BLD}${CYN}2)${RST} Ajouter IP à la whitelist"
+  echo -e "${BLD}${CYN}3)${RST} Ajouter IP à la blacklist"
+  echo -e "${BLD}${CYN}4)${RST} Afficher whitelist & config"
+  echo -e "${BLD}${CYN}5)${RST} Afficher blacklist"
+  echo -e "${BLD}${CYN}6)${RST} Vider la blacklist"
+  echo -e "${BLD}${CYN}0)${RST} Quitter"
+  echo
+
   read -rp "Choix: " c || true
   case "${c:-}" in
     1) APPLY_SECURITY ;;
@@ -355,8 +411,9 @@ MENU() {
     3) ADD_BL ;;
     4) SHOW_INFO ;;
     5) SHOW_BL ;;
+    6) FLUSH_BL ;;
     0) exit 0 ;;
-    *) echo "Choix invalide";;
+    *) echo -e "${RED}Choix invalide${RST}";;
   esac
 }
 
