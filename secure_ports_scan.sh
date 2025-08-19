@@ -413,27 +413,28 @@ MENU() {
   clear
   banner_wdz
 
-  echo -e "${BLD}${CYN}1)${RST} Appliquer la sécurité"
-  echo -e "${BLD}${CYN}2)${RST} Ajouter IP à la whitelist"
-  echo -e "${BLD}${CYN}3)${RST} Ajouter IP à la blacklist"
-  echo -e "${BLD}${CYN}4)${RST} Afficher whitelist & config"
-  echo -e "${BLD}${CYN}5)${RST} Afficher blacklist"
-  echo -e "${BLD}${CYN}6)${RST} Vider la blacklist"
-  echo -e "${BLD}${CYN}0)${RST} Quitter"
-  echo
-
-  read -rp "Choix: " c || true
-  case "${c:-}" in
-    1) APPLY_SECURITY ;;
-    2) ADD_WL ;;
-    3) ADD_BL ;;
-    4) SHOW_INFO ;;
-    5) SHOW_BL ;;
-    6) FLUSH_BL ;;
-    0) exit 0 ;;
-    *) echo -e "${RED}Choix invalide${RST}";;
+  echo "============================="
+  echo " PortGuard - Anti-scan"
+  echo "============================="
+  echo "1) Appliquer la sécurité"
+  echo "2) Ajouter IP à la whitelist"
+  echo "3) Ajouter IP à la blacklist"
+  echo "4) Afficher whitelist & config"
+  echo "5) Afficher blacklist
+  echo "6) Vider la blacklist"
+  echo "0) Quitter"
+  read -rp "Choix: "
+  c || true case "${c:-}" in
+  1) APPLY_SECURITY ;;
+  2) ADD_WL ;;
+  3) ADD_BL ;;
+  4) SHOW_INFO ;;
+  5) SHOW_BL ;;
+  6) FLUSH_BL ;;
+  0) exit 0 ;;
+  *) echo "Choix invalide";;
   esac
-}
+  }
 
 main() {
   ROOT_REQ
