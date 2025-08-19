@@ -192,8 +192,22 @@ STRING_TO_MULTI() { # convert "1 2 3" -> "1,2,3"
 }
 
 ENSURE_BASESETS() {
-  ipset create "$WL_SET" hash:ip -exist
-  ipset create "$BL_SET" hash:ip timeout "$BAN_SECONDS" -exist
+  # WHITELIST : si le set existe déjà, ne rien recréer
+  if ! ipset list "$WL_SET" >/dev/null 2>&1; then
+    ipset create "$WL_SET" hash:ip || true
+  fi
+
+  # BLACKLIST : on veut idéalement un set avec timeout par défaut
+  if ! ipset list "$BL_SET" >/dev/null 2>&1; then
+    ipset create "$BL_SET" hash:ip timeout "$BAN_SECONDS" || true
+  else
+    # Si le set existe déjà mais SANS timeout, on ne recrée pas
+    # → avertir : les bans seront permanents
+    if ! ipset list "$BL_SET" 2>/dev/null | grep -q 'timeout'; then
+      echo "[WARN] Le set '$BL_SET' existe sans timeout par défaut : les bans seront permanents."
+      echo "       (Option: détruire/recréer '$BL_SET' avec 'timeout $BAN_SECONDS' pour des bans temporaires.)"
+    fi
+  fi
 }
 
 APPLY_SECURITY() {
@@ -304,7 +318,11 @@ ADD_BL() {
   local ips
   read -rp "IP à ajouter à la blacklist (séparées par espace): " ips || true
   for ip in $ips; do
-    ipset add "$BL_SET" "$ip" -exist
+  if ipset list "$BL_SET" 2>/dev/null | grep -q 'timeout'; then
+  ipset add "$BL_SET" "$ip" timeout "$BAN_SECONDS" -exist
+else
+  ipset add "$BL_SET" "$ip" -exist
+fi
     echo "[+] BL: $ip"
   done
   SAVE_IPSET
