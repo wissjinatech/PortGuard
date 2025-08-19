@@ -192,22 +192,8 @@ STRING_TO_MULTI() { # convert "1 2 3" -> "1,2,3"
 }
 
 ENSURE_BASESETS() {
-  # WHITELIST : si le set existe déjà, ne rien recréer
-  if ! ipset list "$WL_SET" >/dev/null 2>&1; then
-    ipset create "$WL_SET" hash:ip || true
-  fi
-
-  # BLACKLIST : on veut idéalement un set avec timeout par défaut
-  if ! ipset list "$BL_SET" >/dev/null 2>&1; then
-    ipset create "$BL_SET" hash:ip timeout "$BAN_SECONDS" || true
-  else
-    # Si le set existe déjà mais SANS timeout, on ne recrée pas
-    # → avertir : les bans seront permanents
-    if ! ipset list "$BL_SET" 2>/dev/null | grep -q 'timeout'; then
-      echo "[WARN] Le set '$BL_SET' existe sans timeout par défaut : les bans seront permanents."
-      echo "       (Option: détruire/recréer '$BL_SET' avec 'timeout $BAN_SECONDS' pour des bans temporaires.)"
-    fi
-  fi
+  ipset create "$WL_SET" hash:ip -exist
+  ipset create "$BL_SET" hash:ip timeout "$BAN_SECONDS" -exist
 }
 
 APPLY_SECURITY() {
@@ -318,11 +304,7 @@ ADD_BL() {
   local ips
   read -rp "IP à ajouter à la blacklist (séparées par espace): " ips || true
   for ip in $ips; do
-  if ipset list "$BL_SET" 2>/dev/null | grep -q 'timeout'; then
-  ipset add "$BL_SET" "$ip" timeout "$BAN_SECONDS" -exist
-else
-  ipset add "$BL_SET" "$ip" -exist
-fi
+    ipset add "$BL_SET" "$ip" -exist
     echo "[+] BL: $ip"
   done
   SAVE_IPSET
@@ -355,86 +337,28 @@ SHOW_BL() {
     echo "(set inexistant)"
   fi
 }
-FLUSH_BL() {
-  LOAD_CFG; ENSURE_DEPS; ENSURE_BASESETS
-  read -rp "Confirmer la suppression de TOUTES les IP bannies ? [y/N]: " ans
-  case "${ans:-N}" in
-    y|Y) ;;
-    *) echo "Abandon."; return ;;
-  esac
 
-  ipset flush "$BL_SET" || true
-  # Réinitialiser l’historique du module 'recent' (détection)
-  echo clear > /proc/net/xt_recent/psdetect 2>/dev/null || true
-  SAVE_IPSET
-  echo "[OK] Blacklist vidée."
-}
-# === Couleurs & bannière animée WDZ ===
-init_colors() {
-  if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
-    BLD='\033[1m'; RST='\033[0m'
-    RED='\033[31m'; YEL='\033[33m'; GRN='\033[32m'
-    CYN='\033[36m'; BLU='\033[34m'; MAG='\033[35m'
-  else
-    BLD=; RST=; RED=; YEL=; GRN=; CYN=; BLU=; MAG=
-  fi
-}
-
-banner_wdz() {
-  init_colors
-  local lines=(
-"  ____             _               _____                 _           "
-" |  _ \\ ___  _ __ | |_ ___  _ __  |  __ \\ ___  __ _  ___| |__   __ _ "
-" | |_) / _ \\| '_ \\| __/ _ \\| '__| | |  \\/ _ \\/ _\` |/ __| '_ \\ / _\` |"
-" |  __/ (_) | | | | || (_) | |    | |__|  __/ (_| | (__| | | | (_| |"
-" |_|   \\___/|_| |_|\\__\\___/|_|    |_____/\\___|\\__,_|\\___|_| |_|\\__,_|"
-"                PortGuard - Anti-scan   ·   by WDZ                    "
-  )
-  local palette=("$RED" "$YEL" "$GRN" "$CYN" "$BLU" "$MAG")
-  local cols; cols=$(tput cols 2>/dev/null || echo 80)
-  local anim_ms=${PORTGUARD_ANIM_MS:-25}   # vitesse animation (ms) — exporte PORTGUARD_ANIM_MS=0 pour désactiver
-  printf "\n"
-  for i in "${!lines[@]}"; do
-    local color=${palette[$(( i % ${#palette[@]} ))]}
-    local l="${lines[$i]}"
-    # centrage
-    local pad=$(( (cols - ${#l}) / 2 )); ((pad<0)) && pad=0
-    printf "%*s%b%s%b\n" "$pad" "" "${color}${BLD}" "$l" "$RST"
-    if [ "$anim_ms" -gt 0 ] && [ -t 1 ]; then
-      # petite anim
-      usleep $(( anim_ms * 1000 )) 2>/dev/null || sleep 0.$(( anim_ms/10 ))
-    fi
-  done
-  printf "\n"
-}
-
-# === MENU principal (couleurs + bannière WDZ) ===
 MENU() {
-  clear
-  banner_wdz
-
   echo "============================="
-  echo " PortGuard - Anti-scan"
+  echo "   PortGuard - Anti-scan"
   echo "============================="
   echo "1) Appliquer la sécurité"
   echo "2) Ajouter IP à la whitelist"
   echo "3) Ajouter IP à la blacklist"
   echo "4) Afficher whitelist & config"
-  echo "5) Afficher blacklist
-  echo "6) Vider la blacklist"
+  echo "5) Afficher blacklist"
   echo "0) Quitter"
-  read -rp "Choix: "
-  c || true case "${c:-}" in
-  1) APPLY_SECURITY ;;
-  2) ADD_WL ;;
-  3) ADD_BL ;;
-  4) SHOW_INFO ;;
-  5) SHOW_BL ;;
-  6) FLUSH_BL ;;
-  0) exit 0 ;;
-  *) echo "Choix invalide";;
+  read -rp "Choix: " c || true
+  case "${c:-}" in
+    1) APPLY_SECURITY ;;
+    2) ADD_WL ;;
+    3) ADD_BL ;;
+    4) SHOW_INFO ;;
+    5) SHOW_BL ;;
+    0) exit 0 ;;
+    *) echo "Choix invalide";;
   esac
-  }
+}
 
 main() {
   ROOT_REQ
