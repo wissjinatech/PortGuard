@@ -7,7 +7,7 @@ Only your allowed ports stay open; scanners are auto-blacklisted (all ports look
 
 ⚡️ Quick Install
 
-sudo wget -qO /root/portguard.sh "https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh" \
+sudo wget -qO /root/portguard.sh "https://raw.githubusercontent.com/wiijiitoolsecurite/PortGuard/main/secure_ports_scan.sh" \
 sudo chmod +x /root/portguard.sh \
 sudo /root/portguard.sh
 
@@ -36,7 +36,7 @@ EN below.
 
 ⚡️ Installation rapide
 
-sudo wget -qO /root/portguard.sh "https://raw.githubusercontent.com/wissjinatech/PortGuard/main/secure_ports_scan.sh" \
+sudo wget -qO /root/portguard.sh "https://raw.githubusercontent.com/wiijiitoolsecurite/PortGuard/main/secure_ports_scan.sh" \
 sudo chmod +x /root/portguard.sh \
 sudo /root/portguard.sh
 
